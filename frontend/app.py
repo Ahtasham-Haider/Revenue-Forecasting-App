@@ -33,7 +33,7 @@ else:
     }
 
     if st.button("Predict"):
-        response = requests.post("http://127.0.0.1:8000/predict", json=input_data)
+        response = requests.post("https://revenue-backend.onrender.com/predict", json=input_data)
         if response.status_code == 200:
             prediction = response.json()["predicted_revenue"]
             st.success(f"📊 Predicted Revenue: ₹{prediction:,.2f}")
