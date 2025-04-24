@@ -6,9 +6,9 @@ import joblib
 import os
 
 # Loading DataSet
-if not os.path.exists("company_esg_financial_dataset.csv"):
+if not os.path.exists("Data/company_esg_financial_dataset.csv"):
     raise FileNotFoundError("company_esg_financial_dataset.csv. Please include it for lag computation.")
-financial_df = pd.read_csv("company_esg_financial_dataset.csv")
+financial_df = pd.read_csv("Data/company_esg_financial_dataset.csv")
 
 # Loading model and scaler
 model = joblib.load("backend/model/xgb_model.pkl")
@@ -29,6 +29,10 @@ app = FastAPI()
 
 @app.post("/predict")
 def predict(data: InputData):
+
+    if data.CompanyName not in financial_df["CompanyName"].unique():
+        raise HTTPException(status_code=400, detail="Company Not found.")
+
     if data.MarketCap == 0:
         raise HTTPException(status_code=400, detail="MarketCap cannot be zero.")
     RevenuePerCap = data.Revenue/data.MarketCap
@@ -43,7 +47,7 @@ def predict(data: InputData):
 
     if row.empty:
         raise HTTPException(status_code=400,
-                            detail="Previous year's revenue not found for this company.")
+                            detail="Previous year's revenue not found. Make sure your dataset has this entry.")
     Revenue_lag1 = row.iloc[0]["Revenue"]
 
     features = np.array([[data.Year, data.MarketCap, data.GrowthRate, data.WaterUsage,
